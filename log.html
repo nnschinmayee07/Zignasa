@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DeXpress Login</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      color: #ffffff;
+      background: linear-gradient(135deg, #0d0d0d 0%, #1a1a1a 40%, #003b8e 100%);
+      overflow: hidden;
+    }
+
+    .container {
+      width: 420px;
+      background: rgba(0, 0, 0, 0.55);
+      backdrop-filter: blur(12px);
+      padding: 32px;
+      border-radius: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      box-shadow: 0 18px 45px rgba(0,0,0,0.6);
+      text-align: center;
+      animation: fadeSlide 0.7s ease;
+    }
+
+    @keyframes fadeSlide {
+      0% { transform: translateY(26px); opacity: 0; }
+      100% { transform: translateY(0); opacity: 1; }
+    }
+
+    .title {
+      font-size: 26px;
+      margin-bottom: 20px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      color: #e3e3e3;
+      text-shadow: 0 0 10px rgba(0,0,0,0.55);
+    }
+
+    .input-box {
+      background: rgba(255,255,255,0.15);
+      padding: 12px 14px;
+      margin-top: 18px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      border: 1px solid rgba(255,255,255,0.25);
+    }
+
+    .input-box input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      outline: none;
+      font-size: 15px;
+      color: #fff;
+    }
+
+    .btn {
+      width: 100%;
+      margin-top: 24px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: none;
+      background: linear-gradient(135deg, #d50000, #ff1744, #2962ff);
+      font-size: 17px;
+      color: white;
+      cursor: pointer;
+      letter-spacing: 1px;
+      box-shadow: 0 10px 26px rgba(0,0,0,0.35);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 18px 32px rgba(0,0,0,0.45);
+    }
+
+    .google-btn {
+      width: 100%;
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: none;
+      background: #4285F4;
+      font-size: 16px;
+      color: white;
+      cursor: pointer;
+      letter-spacing: 1px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .google-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(0,0,0,0.35);
+    }
+
+    .bottom-text {
+      margin-top: 18px;
+      font-size: 14px;
+      color: #e0e0e0;
+    }
+
+    a {
+      text-decoration: none;
+      color: #82b1ff;
+      font-weight: 600;
+    }
+
+    /* --- Cursor trail styles --- */
+    .trail-dot {
+      position: fixed;
+      pointer-events: none;
+      width: 8px;
+      height: 8px;
+      background: rgba(255,255,255,0.7);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      animation: fadeTrail 0.5s forwards;
+    }
+
+    @keyframes fadeTrail {
+      0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+      100% { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <div class="title">💫WELCOME TO DEXPRESS✨</div>
+
+    <div class="input-box">
+      <input type="text" placeholder="Email" id="email">
+    </div>
+
+    <div class="input-box">
+      <input type="password" placeholder="Password" id="password">
+    </div>
+
+    <button class="btn">LOGIN</button>
+
+    <button class="google-btn">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google logo" width="20" height="20">
+      Sign in with Google
+    </button>
+
+    <div class="bottom-text">
+      Don’t have an account? <a href="#">Sign up</a>
+    </div>
+
+  </div>
+
+  <script>
+    // Cursor trail
+    function createTrailDot(x, y) {
+      const dot = document.createElement('div');
+      dot.className = 'trail-dot';
+      dot.style.left = x + 'px';
+      dot.style.top = y + 'px';
+      document.body.appendChild(dot);
+
+      dot.addEventListener('animationend', () => dot.remove());
+    }
+
+    document.addEventListener('mousemove', e => createTrailDot(e.clientX, e.clientY));
+    document.addEventListener('click', e => createTrailDot(e.clientX, e.clientY));
+
+    // LOGIN button redirect to live HTML page (hosted e.g., GitHub Pages)
+    document.querySelector('.btn').addEventListener('click', () => {
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value.trim();
+
+      if (email && password) {
+        // Replace this with your GitHub Pages URL
+        window.location.href = 'https://username.github.io/your-file.html';
+      } else {
+        alert('Please enter both email and password.');
+      }
+    });
+
+    // Google Sign-in simulation
+    document.querySelector('.google-btn').addEventListener('click', () => {
+      // This is a placeholder URL. Replace with your OAuth flow URL if you implement real Google Sign-in
+      window.location.href = 'https://accounts.google.com/signin';
+    });
+  </script>
+
+</body>
+</html>
