@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Intro Video — DeXpress</title>
+
+  <style>
+    /* --- layout --- */
+    :root{
+      --bg: #000;
+      --accent: #0066ff;
+      --muted: rgba(255,255,255,0.6);
+    }
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial; background:var(--bg); color:#fff; -webkit-font-smoothing:antialiased}
+    .center{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
+
+    /* video fills viewport */
+    video {
+      position: absolute;
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      top:0;left:0;
+      opacity:1;
+      transition: opacity 420ms ease;
+    }
+
+    /* overlay content (logo/title/skip) */
+    .overlay {
+      position:relative;
+      z-index: 10;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      align-items:center;
+      pointer-events:none;
+    }
+    .brand {
+      pointer-events:auto;
+      background: rgba(0,0,0,0.35);
+      padding:10px 14px;
+      border-radius:12px;
+      backdrop-filter: blur(6px);
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+    .brand img{width:48px;height:48px;border-radius:8px;object-fit:cover}
+    .brand .title{font-weight:700;letter-spacing:1px}
+
+    /* skip button */
+    .controls {
+      margin-top:18px;
+      pointer-events:auto;
+      display:flex;
+      gap:10px;
+    }
+    .btn {
+      border:0; padding:10px 14px; border-radius:10px; font-weight:700;
+      cursor:pointer; background:linear-gradient(90deg,var(--accent),#ff0033); color:#fff;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+      transition: transform .22s ease, box-shadow .22s ease, opacity .22s ease;
+      transform-origin:center;
+      user-select:none;
+    }
+    .btn.ghost { background: rgba(255,255,255,0.06); color: #fff; border: 1px solid rgba(255,255,255,0.06) }
+
+    .btn:hover{ transform: translateY(-4px) scale(1.02) }
+    .btn:active{ transform: scale(.96) }
+
+    /* fade-out for navigation */
+    .fade-out { opacity: 0 !important; transition: opacity 360ms ease-in; }
+
+    /* mobile tweaks */
+    @media (max-width:700px){
+      .brand .title { font-size:16px }
+      .brand img{width:40px;height:40px}
+      .btn{padding:10px 12px}
+    }
+
+    /* ripple helper styles (invisible) */
+    .ripple { position: absolute; border-radius: 50%; transform: scale(0); pointer-events: none; opacity: .9; }
+  </style>
+</head>
+<body>
+  <div class="center">
+    <!-- video element: use relative path for portability -->
+    <video id="introVideo" autoplay muted playsinline>
+      <source src="./logo.mp4" type="video/mp4">
+      <!-- fallback text -->
+    </video>
+
+    <div class="overlay" aria-hidden="false">
+      <div class="brand" role="img" aria-label="DeXpress">
+        <img src="https://drive.google.com/thumbnail?id=1OFonl14VlrMn_Y4Ql2T0Dc-aJFS-kXUj" alt="logo">
+        <div>
+          <div class="title">DeXpress</div>
+          <div style="font-size:13px;color:var(--muted)">Deploy in one click</div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button id="skipBtn" class="btn ghost" title="Skip intro">Skip</button>
+        <a id="enterBtn" class="btn" href="log.html" title="Enter DeXpress">Enter</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* --- small utilities --- */
+    const video = document.getElementById('introVideo');
+    const skipBtn = document.getElementById('skipBtn');
+    const enterBtn = document.getElementById('enterBtn');
+
+    // When video ends -> navigate to login
+    video.addEventListener('ended', () => goTo('log.html'));
+
+    // Fallback: if the file fails, show Enter quickly
+    video.addEventListener('error', () => {
+      // bring enter button into focus
+      enterBtn.style.opacity = '1';
+    });
+
+    // Skip button
+    skipBtn.addEventListener('click', () => goTo('log.html'));
+
+    // Improved navigation: fade out before redirect for internal links only
+    function goTo(href){
+      // if href seems external, do direct navigation
+      if(/^https?:\\/\\//i.test(href) && !href.startsWith(location.origin)) {
+        location.href = href;
+        return;
+      }
+      document.body.classList.add('fade-out');
+      setTimeout(()=> location.href = href, 360);
+    }
+
+    // attach enter button click so fade-out is used
+    enterBtn.addEventListener('click', function(e){ e.preventDefault(); goTo(this.getAttribute('href')); });
+
+    /* --- ripple effect for .btn elements --- */
+    (function attachRipple(){
+      document.querySelectorAll('.btn, a.btn').forEach(el=>{
+        el.style.position = 'relative';
+        el.style.overflow = 'hidden';
+        el.addEventListener('click', function(e){
+          const rect = this.getBoundingClientRect();
+          const size = Math.max(rect.width, rect.height) * 1.6;
+          const ripple = document.createElement('span');
+          ripple.className = 'ripple';
+          ripple.style.width = ripple.style.height = size + 'px';
+          ripple.style.left = (e.clientX - rect.left - size/2) + 'px';
+          ripple.style.top = (e.clientY - rect.top - size/2) + 'px';
+          ripple.style.background = 'rgba(255,255,255,0.18)';
+          ripple.style.transition = 'transform .55s cubic-bezier(.2,.9,.3,1), opacity .55s';
+          this.appendChild(ripple);
+          requestAnimationFrame(()=> ripple.style.transform = 'scale(1)');
+          setTimeout(()=>{ ripple.style.opacity = '0'; }, 350);
+          setTimeout(()=> ripple.remove(), 700);
+        });
+      });
+    })();
+    <script>
+const helpBtn = document.getElementById('floatingHelp');
+
+helpBtn.addEventListener('click', () => {
+  const root = document.createElement('div');
+  root.className = 'modal-backdrop';
+  root.style.position = 'fixed';
+  root.style.inset = '0';
+  root.style.background = 'rgba(2,6,23,0.45)';
+  root.style.display = 'flex';
+  root.style.alignItems = 'center';
+  root.style.justifyContent = 'center';
+  root.style.zIndex = '3000';
+  root.innerHTML = `
+    <div class="modal">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="font-size:18px;font-weight:800">Need Help?</div>
+        <button id="closeHelp" class="btn ghost" style="margin-left:auto">✖</button>
+      </div>
+      <p style="margin-top:12px;">Contact us at <strong>DeXpress@gmail.com</strong> or DM us at <strong>@DeXpresters</strong></p>
+    </div>
+  `;
+  document.body.appendChild(root);
+
+  document.getElementById('closeHelp').addEventListener('click', () => {
+    document.body.removeChild(root);
+  });
+});
+</script>
+
+  </script>
+</body>
+</html>
