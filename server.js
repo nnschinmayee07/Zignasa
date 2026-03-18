@@ -31,6 +31,39 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 app.get('/health', (req, res) => res.json({ ok: true, now: nowISO() }));
 
+// Validate a GitHub repo URL and return metadata
+app.post('/api/validate-repo', async (req, res) => {
+  const { repo } = req.body;
+  if (!repo) return res.status(400).json({ error: 'repo required' });
+
+  // must be a github.com URL
+  const match = repo.match(/github\.com\/([^/]+)\/([^/\s]+)/);
+  if (!match) return res.status(400).json({ valid: false, error: 'Not a valid GitHub URL' });
+
+  const [, owner, repoName] = match;
+  try {
+    const resp = await fetch(`https://api.github.com/repos/${owner}/${repoName.replace(/\.git$/, '')}`, {
+      headers: { 'Accept': 'application/vnd.github.v3+json', 'User-Agent': 'dexpress-app' }
+    });
+    if (resp.status === 404) return res.status(200).json({ valid: false, error: 'Repository not found or is private' });
+    if (!resp.ok) return res.status(200).json({ valid: false, error: `GitHub API error: ${resp.status}` });
+    const data = await resp.json();
+    res.json({
+      valid: true,
+      meta: {
+        fullName: data.full_name,
+        description: data.description,
+        language: data.language,
+        stars: data.stargazers_count,
+        defaultBranch: data.default_branch,
+        private: data.private
+      }
+    });
+  } catch (err) {
+    res.status(200).json({ valid: false, error: 'Could not reach GitHub: ' + err.message });
+  }
+});
+
 // Serve HTML pages
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'welcome.html')));
 app.get('/welcome.html', (req, res) => res.sendFile(path.join(__dirname, 'welcome.html')));
@@ -102,6 +135,24 @@ app.post('/api/deploy', async (req, res) => {
   try {
     const payload = req.body.payload || req.body;
     if (!payload || !payload.name) return res.status(400).json({ error: 'payload.name required' });
+
+    // validate repo if provided
+    if (payload.repo) {
+      const match = payload.repo.match(/github\.com\/([^/]+)\/([^/\s]+)/);
+      if (!match) return res.status(400).json({ error: 'Invalid repository URL. Must be a GitHub URL.' });
+      const [, owner, repoName] = match;
+      const ghResp = await fetch(`https://api.github.com/repos/${owner}/${repoName.replace(/\.git$/, '')}`, {
+        headers: { 'Accept': 'application/vnd.github.v3+json', 'User-Agent': 'dexpress-app' }
+      });
+      if (ghResp.status === 404) return res.status(400).json({ error: 'Repository not found or is private on GitHub.' });
+      if (!ghResp.ok) return res.status(400).json({ error: `GitHub validation failed: ${ghResp.status}` });
+      const ghData = await ghResp.json();
+      // auto-detect framework from language if not provided
+      if (!payload.framework || payload.framework === 'Auto-detect') {
+        const langMap = { JavaScript: 'Node', TypeScript: 'Next.js', Python: 'Python', Ruby: 'Ruby' };
+        payload.framework = langMap[ghData.language] || ghData.language || 'Auto-detect';
+      }
+    }
 
     // upsert project
     const { rows: existing } = await pool.query('SELECT * FROM projects WHERE name = $1 LIMIT 1', [payload.name]);
