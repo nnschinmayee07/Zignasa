@@ -191,11 +191,13 @@
 
               <label class="muted" style="margin-top:8px">Repository URL <span class="muted" style="font-weight:400">(or upload files below)</span></label>
               <input id="inlineRepo" type="url" placeholder="https://github.com/your/repo or any git URL" />
-              <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
-                <label class="muted" style="font-size:13px">Or upload project files:</label>
-                <label for="inlineUpload" class="btn ghost" style="padding:6px 12px;font-size:13px;cursor:pointer">Choose Files</label>
-                <input id="inlineUpload" type="file" multiple accept=".zip,.tar.gz,.js,.ts,.json,.html,.css,.py,.rb,.go" style="display:none"/>
-                <span id="uploadLabel" class="muted" style="font-size:13px">No files chosen</span>
+              <div style="margin-top:10px;padding:10px 12px;border:1px dashed rgba(15,23,36,0.15);border-radius:8px;background:rgba(0,102,255,0.03)">
+                <div style="font-size:13px;color:var(--muted);margin-bottom:6px">Or upload project files</div>
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                  <label for="inlineUpload" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;border:1px solid rgba(15,23,36,0.12);background:var(--card);cursor:pointer;font-size:13px;font-weight:600;color:var(--text)">📁 Choose Files</label>
+                  <input id="inlineUpload" type="file" multiple accept=".zip,.tar.gz,.js,.ts,.json,.html,.css,.py,.rb,.go" style="display:none"/>
+                  <span id="uploadLabel" style="font-size:13px;color:var(--muted)">No files chosen</span>
+                </div>
               </div>
 
               <div class="form-row" style="margin-top:8px">
@@ -676,31 +678,50 @@ function startDeployment(payload){
         nextStep();
       } else {
         // finished local build; if sendApi is enabled, POST payload
-        if(payload.sendApi && payload.endpoint){
-          appendLog(`Posting payload to ${payload.endpoint} ...`);
-          // try fetch
-          fetch(payload.endpoint, {
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body: JSON.stringify({ project: project, runId })
-          }).then(async res => {
-            const text = await res.text().catch(()=>'<no-body>');
-            appendLog(`[api] HTTP ${res.status} ${res.statusText} — response: ${text.slice(0,500)}`);
-            if(res.ok){
-              finalizeRun('success', runId, Date.now()-startTs);
-            } else {
-              finalizeRun('failed', runId, Date.now()-startTs);
-            }
-          }).catch(err => {
-            appendLog('[api] Request failed: ' + err.message);
-            appendLog('[fallback] Continuing with local deploy simulation');
-            // fallback: finalize as success
-            finalizeRun('success', runId, Date.now()-startTs);
-          });
-        } else {
-          // purely local simulation
-          finalizeRun('success', runId, Date.now()-startTs);
-        }
+        // Always call real backend
+        const apiBase = 'https://zignasa-three.vercel.app';
+        appendLog('Sending deployment to backend...');
+        fetch(apiBase + '/api/deploy', {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ name: project.name, repo: project.repo, framework: project.framework, region: project.region })
+        }).then(async res => {
+          const data = await res.json().catch(()=>({}));
+          if(!res.ok){
+            appendLog('[error] ' + (data.error || 'Deploy API failed'));
+            finalizeRun('failed', runId, Date.now()-startTs);
+            return;
+          }
+          const backendRunId = data.runId;
+          appendLog(`[api] Queued — backend run ID: ${backendRunId}`);
+          // Poll backend for real-time status
+          let pollCount = 0;
+          const poll = setInterval(async () => {
+            pollCount++;
+            if(pollCount > 60){ clearInterval(poll); finalizeRun('failed', runId, Date.now()-startTs); return; }
+            try {
+              const r = await fetch(apiBase + '/api/runs/' + backendRunId);
+              const d = await r.json();
+              if(d.logs && d.logs.length){
+                const lastLog = d.logs[d.logs.length-1];
+                appendLog('[backend] ' + lastLog.message);
+              }
+              const pct = Math.min(95, pollCount * 8);
+              qs('#progressBar').style.width = pct + '%';
+              qs('#progressPct').textContent = pct + '%';
+              if(d.run && (d.run.status === 'success' || d.run.status === 'failed')){
+                clearInterval(poll);
+                qs('#progressBar').style.width = '100%';
+                qs('#progressPct').textContent = '100%';
+                appendLog(`[backend] Build ${d.run.status} — time: ${d.run.build_time || '—'}`);
+                finalizeRun(d.run.status, runId, Date.now()-startTs);
+              }
+            } catch(e){ appendLog('[poll error] ' + e.message); }
+          }, 1500);
+        }).catch(err => {
+          appendLog('[error] Could not reach backend: ' + err.message);
+          finalizeRun('failed', runId, Date.now()-startTs);
+        });
       }
     }, stepDelay);
   }
