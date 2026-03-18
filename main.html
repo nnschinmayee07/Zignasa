@@ -127,7 +127,20 @@
     <div class="user">
       <button id="openDeploy" class="btn primary" title="New deployment">New Deployment</button>
       <button id="toggleTheme" class="btn ghost" title="Toggle theme">THEME</button>
-      <div class="avatar" title="User">DX</div>
+      <div style="position:relative">
+        <div class="avatar" id="avatarBtn" title="Profile" style="cursor:pointer">DX</div>
+        <div id="profileDropdown" style="display:none;position:absolute;top:calc(100% + 10px);right:0;background:var(--card);border-radius:12px;box-shadow:0 10px 30px rgba(16,24,40,0.14);padding:16px;min-width:220px;z-index:2000;border:1px solid rgba(15,23,36,0.08)">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+            <div class="avatar" style="width:42px;height:42px;font-size:16px" id="dropdownInitials">DX</div>
+            <div>
+              <div style="font-weight:700;font-size:14px" id="dropdownEmail">user@dexpress.app</div>
+              <div class="muted" style="font-size:12px">Logged in</div>
+            </div>
+          </div>
+          <hr style="border:none;border-top:1px solid rgba(15,23,36,0.06);margin:8px 0"/>
+          <button id="logoutBtn" class="btn ghost" style="width:100%;justify-content:center;color:#c22a2a;border-color:#fdecea">Logout</button>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -176,8 +189,14 @@
               <label class="muted">Project Name</label>
               <input id="inlineProjectName" type="text" placeholder="my-awesome-app" value="my-awesome-app"/>
 
-              <label class="muted" style="margin-top:8px">Repository URL</label>
-              <input id="inlineRepo" type="url" placeholder="https://github.com/your/repo" />
+              <label class="muted" style="margin-top:8px">Repository URL <span class="muted" style="font-weight:400">(or upload files below)</span></label>
+              <input id="inlineRepo" type="url" placeholder="https://github.com/your/repo or any git URL" />
+              <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+                <label class="muted" style="font-size:13px">Or upload project files:</label>
+                <label for="inlineUpload" class="btn ghost" style="padding:6px 12px;font-size:13px;cursor:pointer">Choose Files</label>
+                <input id="inlineUpload" type="file" multiple accept=".zip,.tar.gz,.js,.ts,.json,.html,.css,.py,.rb,.go" style="display:none"/>
+                <span id="uploadLabel" class="muted" style="font-size:13px">No files chosen</span>
+              </div>
 
               <div class="form-row" style="margin-top:8px">
                 <div class="col">
@@ -414,6 +433,8 @@ qs('#inlineCancelBtn').addEventListener('click', () => {
   qs('#inlineFramework').value = 'Auto-detect';
   qs('#inlineEndpoint').value = '';
   qs('#inlineSendApi').checked = false;
+  const up = qs('#inlineUpload'); if(up) up.value = '';
+  const ul = qs('#uploadLabel'); if(ul) ul.textContent = 'No files chosen';
 });
 qs('#inlineSimulateFail').addEventListener('click', ()=> {
   const payload = gatherInlineForm();
@@ -553,9 +574,18 @@ function closeModal(){ const root = qs('#modalRoot'); root.innerHTML=''; root.st
 function gatherInlineForm(){
   const name = qs('#inlineProjectName').value.trim();
   if(!name){ alert('Please enter project name'); qs('#inlineProjectName').focus(); return null; }
+  const repo = qs('#inlineRepo').value.trim();
+  const uploadEl = qs('#inlineUpload');
+  const hasFiles = uploadEl && uploadEl.files && uploadEl.files.length > 0;
+  if(!repo && !hasFiles){
+    appendLog('[error] Deployment failed: Please provide a repository URL or upload project files');
+    setLiveStatus('failed');
+    return null;
+  }
   return {
     name,
-    repo: qs('#inlineRepo').value.trim(),
+    repo,
+    uploadedFiles: hasFiles ? Array.from(uploadEl.files).map(f => f.name) : [],
     framework: qs('#inlineFramework').value,
     region: qs('#inlineRegion').value,
     sendApi: qs('#inlineSendApi').checked,
@@ -876,6 +906,44 @@ function loadScript(src){
 
 /* ---------- small helpers ---------- */
 function escapeHTML(s){ return s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+
+/* ---------- Profile dropdown ---------- */
+const avatarBtn = qs('#avatarBtn');
+const profileDropdown = qs('#profileDropdown');
+
+try {
+  const u = JSON.parse(localStorage.getItem('dexpress_user') || '{}');
+  if(u.email){
+    qs('#dropdownEmail').textContent = u.email;
+    const initials = u.email.slice(0,2).toUpperCase();
+    qs('#dropdownInitials').textContent = initials;
+    avatarBtn.textContent = initials;
+  }
+} catch(e){}
+
+avatarBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  profileDropdown.style.display = profileDropdown.style.display === 'none' ? 'block' : 'none';
+});
+
+document.addEventListener('click', () => {
+  profileDropdown.style.display = 'none';
+});
+
+qs('#logoutBtn').addEventListener('click', () => {
+  localStorage.removeItem('dexpress_user');
+  window.location.href = 'log.html';
+});
+
+
+/* ---------- Upload file wiring ---------- */
+const inlineUpload = qs('#inlineUpload');
+const uploadLabel = qs('#uploadLabel');
+inlineUpload.addEventListener('change', () => {
+  const files = Array.from(inlineUpload.files);
+  uploadLabel.textContent = files.length ? files.map(f => f.name).join(', ') : 'No files chosen';
+});
 
 /* ---------- init ---------- */
 
