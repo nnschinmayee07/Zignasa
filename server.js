@@ -4,7 +4,14 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path');
+const multer = require('multer');
 const { Pool } = require('pg');
+
+// multer: store uploads in memory (Vercel has no persistent disk)
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 50 * 1024 * 1024 } // 50MB max
+});
 
 dotenv.config();
 
@@ -130,28 +137,41 @@ app.post('/api/logs/:runId', async (req, res) => {
   }
 });
 
-// Create deploy
-app.post('/api/deploy', async (req, res) => {
+// Create deploy — accepts JSON body OR multipart file upload
+app.post('/api/deploy', upload.single('projectFile'), async (req, res) => {
   try {
-    const payload = req.body.payload || req.body;
+    // support both multipart and JSON
+    const payload = req.body.payload ? JSON.parse(req.body.payload) : req.body;
     if (!payload || !payload.name) return res.status(400).json({ error: 'payload.name required' });
 
-    // validate repo if provided
-    if (payload.repo) {
-      const match = payload.repo.match(/github\.com\/([^/]+)\/([^/\s]+)/);
-      if (!match) return res.status(400).json({ error: 'Invalid repository URL. Must be a GitHub URL.' });
-      const [, owner, repoName] = match;
-      const ghResp = await fetch(`https://api.github.com/repos/${owner}/${repoName.replace(/\.git$/, '')}`, {
-        headers: { 'Accept': 'application/vnd.github.v3+json', 'User-Agent': 'dexpress-app' }
-      });
-      if (ghResp.status === 404) return res.status(400).json({ error: 'Repository not found or is private on GitHub.' });
-      if (!ghResp.ok) return res.status(400).json({ error: `GitHub validation failed: ${ghResp.status}` });
-      const ghData = await ghResp.json();
-      // auto-detect framework from language if not provided
-      if (!payload.framework || payload.framework === 'Auto-detect') {
-        const langMap = { JavaScript: 'Node', TypeScript: 'Next.js', Python: 'Python', Ruby: 'Ruby' };
-        payload.framework = langMap[ghData.language] || ghData.language || 'Auto-detect';
+    const hasFile = !!req.file;
+    const fileInfo = hasFile ? { name: req.file.originalname, size: req.file.size, mimetype: req.file.mimetype } : null;
+
+    // validate repo only if provided (file upload skips repo validation)
+    if (payload.repo && !hasFile) {
+      const urlPattern = /^https?:\/\/.+/;
+      if (!urlPattern.test(payload.repo)) {
+        return res.status(400).json({ error: 'Invalid repository URL.' });
       }
+      // GitHub-specific validation
+      const ghMatch = payload.repo.match(/github\.com\/([^/]+)\/([^/\s]+)/);
+      if (ghMatch) {
+        const [, owner, repoName] = ghMatch;
+        const ghResp = await fetch(`https://api.github.com/repos/${owner}/${repoName.replace(/\.git$/, '')}`, {
+          headers: { 'Accept': 'application/vnd.github.v3+json', 'User-Agent': 'dexpress-app' }
+        });
+        if (ghResp.status === 404) return res.status(400).json({ error: 'Repository not found or is private on GitHub.' });
+        if (!ghResp.ok) return res.status(400).json({ error: `GitHub validation failed: ${ghResp.status}` });
+        const ghData = await ghResp.json();
+        if (!payload.framework || payload.framework === 'Auto-detect') {
+          const langMap = { JavaScript: 'Node', TypeScript: 'Next.js', Python: 'Python', Ruby: 'Ruby' };
+          payload.framework = langMap[ghData.language] || ghData.language || 'Auto-detect';
+        }
+      }
+    }
+
+    if (!payload.repo && !hasFile) {
+      return res.status(400).json({ error: 'Deployment failed: Please provide a repository URL or upload project files.' });
     }
 
     // upsert project
@@ -185,7 +205,7 @@ app.post('/api/deploy', async (req, res) => {
     );
     const run = runRows[0];
 
-    simulateBuild(run.id, project).catch(err => console.error('simulateBuild err', err));
+    simulateBuild(run.id, project, fileInfo).catch(err => console.error('simulateBuild err', err));
 
     res.json({ runId: run.id, projectId: project.id, status: 'queued' });
   } catch (err) {
@@ -194,11 +214,20 @@ app.post('/api/deploy', async (req, res) => {
   }
 });
 
-async function simulateBuild(runId, project) {
+async function simulateBuild(runId, project, fileInfo = null) {
   try {
     await pool.query("UPDATE runs SET status='running' WHERE id=$1", [runId]);
     await pool.query('INSERT INTO run_logs (run_id, level, message) VALUES ($1, $2, $3)', [runId, 'info', 'Build queued']);
-    const steps = ['Cloning repo', 'Installing dependencies', 'Building assets', 'Running tests', 'Packaging', 'Uploading', 'Activating services'];
+
+    if (fileInfo) {
+      await pool.query('INSERT INTO run_logs (run_id, level, message) VALUES ($1, $2, $3)', [runId, 'info', `Received uploaded file: ${fileInfo.name} (${(fileInfo.size/1024).toFixed(1)} KB)`]);
+      await pool.query('INSERT INTO run_logs (run_id, level, message) VALUES ($1, $2, $3)', [runId, 'info', 'Extracting project files...']);
+    } else {
+      await pool.query('INSERT INTO run_logs (run_id, level, message) VALUES ($1, $2, $3)', [runId, 'info', `Cloning repo: ${project.repo}`]);
+    }
+    const steps = fileInfo
+      ? ['Validating files', 'Installing dependencies', 'Building assets', 'Running tests', 'Packaging', 'Uploading', 'Activating services']
+      : ['Installing dependencies', 'Building assets', 'Running tests', 'Packaging', 'Uploading', 'Activating services'];
     for (const step of steps) {
       await pool.query('INSERT INTO run_logs (run_id, level, message) VALUES ($1, $2, $3)', [runId, 'info', step + '...']);
       await sleep(700 + Math.floor(Math.random() * 1000));

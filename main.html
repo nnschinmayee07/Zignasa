@@ -681,11 +681,22 @@ function startDeployment(payload){
         // Always call real backend
         const apiBase = 'https://zignasa-three.vercel.app';
         appendLog('Sending deployment to backend...');
-        fetch(apiBase + '/api/deploy', {
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({ name: project.name, repo: project.repo, framework: project.framework, region: project.region })
-        }).then(async res => {
+        const uploadEl2 = qs('#inlineUpload');
+        const hasUpload = uploadEl2 && uploadEl2.files && uploadEl2.files.length > 0;
+        let fetchOpts;
+        if(hasUpload){
+          const fd = new FormData();
+          fd.append('name', project.name);
+          fd.append('repo', project.repo || '');
+          fd.append('framework', project.framework || '');
+          fd.append('region', project.region || '');
+          fd.append('projectFile', uploadEl2.files[0]);
+          appendLog(`Uploading file: ${uploadEl2.files[0].name} (${(uploadEl2.files[0].size/1024).toFixed(1)} KB)...`);
+          fetchOpts = { method:'POST', body: fd };
+        } else {
+          fetchOpts = { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name: project.name, repo: project.repo, framework: project.framework, region: project.region }) };
+        }
+        fetch(apiBase + '/api/deploy', fetchOpts).then(async res => {
           const data = await res.json().catch(()=>({}));
           if(!res.ok){
             appendLog('[error] ' + (data.error || 'Deploy API failed'));
