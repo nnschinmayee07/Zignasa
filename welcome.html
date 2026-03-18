@@ -161,36 +161,6 @@
         });
       });
     })();
-    <script>
-const helpBtn = document.getElementById('floatingHelp');
-
-helpBtn.addEventListener('click', () => {
-  const root = document.createElement('div');
-  root.className = 'modal-backdrop';
-  root.style.position = 'fixed';
-  root.style.inset = '0';
-  root.style.background = 'rgba(2,6,23,0.45)';
-  root.style.display = 'flex';
-  root.style.alignItems = 'center';
-  root.style.justifyContent = 'center';
-  root.style.zIndex = '3000';
-  root.innerHTML = `
-    <div class="modal">
-      <div style="display:flex;align-items:center;gap:12px">
-        <div style="font-size:18px;font-weight:800">Need Help?</div>
-        <button id="closeHelp" class="btn ghost" style="margin-left:auto">✖</button>
-      </div>
-      <p style="margin-top:12px;">Contact us at <strong>DeXpress@gmail.com</strong> or DM us at <strong>@DeXpresters</strong></p>
-    </div>
-  `;
-  document.body.appendChild(root);
-
-  document.getElementById('closeHelp').addEventListener('click', () => {
-    document.body.removeChild(root);
-  });
-});
-</script>
-
   </script>
 </body>
 </html>
