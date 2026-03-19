@@ -3,56 +3,56 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>DeXpress — Interactive Deployment UI</title>
-  <meta name="color-scheme" content="light dark">
+  <title>DeXpress — Deployment Portal</title>
   <style>
-    :root{
-      --bg:#f6f8fb; --card:#fff; --muted:#6b7280; --text:#0f1724;
-      --accent: linear-gradient(90deg,#0066ff,#ff0033); --accent-solid:#0066ff;
-      --radius:12px; --shadow: 0 10px 30px rgba(16,24,40,0.06);
-      --nav-h:70px; --access-h:58px;
-      --success:#0f7a48; --danger:#c22a2a;
+    :root {
+      --bg: #0b1120; --card: #111827; --border: rgba(255,255,255,0.07);
+      --text: #e6eef8; --muted: #6b7280; --accent: #3b82f6;
+      --success: #10b981; --danger: #ef4444; --warn: #f59e0b;
+      --radius: 12px;
     }
-    .theme-red{ --accent: linear-gradient(90deg,#ff6b6b,#ff8a8a); --accent-solid:#ff6b6b; }
-    .dark{ --bg:#0b1220; --card:#071021; --muted:#9aa4b2; --text:#e6eef8; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; font-family: Inter, ui-sans-serif, system-ui, sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
 
-    *{box-sizing:border-box}
-    html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;}
-    body{background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;scroll-behavior:smooth}
-    .app{min-height:100vh;display:flex;flex-direction:column}
+    /* Layout */
+    .app { display: flex; height: 100vh; overflow: hidden; }
+    .sidebar { width: 220px; background: var(--card); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 20px 0; flex-shrink: 0; }
+    .main { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
 
-    /* Header */
-    header.toolbar{
-      height:var(--nav-h); display:flex;align-items:center;justify-content:space-between;padding:0 20px;
-      position:fixed;left:0;right:0;top:0;background:rgba(255,255,255,0.86);backdrop-filter: blur(6px);
-      box-shadow:0 4px 16px rgba(16,24,40,0.06);z-index:1000;
-    }
-    .brand{display:flex;gap:12px;align-items:center}
-    .logo img{width:44px;height:44px;border-radius:12px;object-fit:cover;display:block}
-    .brand span{font-weight:700;color:var(--accent-solid);font-size:18px}
+    /* Sidebar */
+    .sidebar-brand { display: flex; align-items: center; gap: 10px; padding: 0 20px 24px; border-bottom: 1px solid var(--border); }
+    .sidebar-brand img { width: 36px; height: 36px; border-radius: 8px; }
+    .sidebar-brand span { font-weight: 800; font-size: 18px; color: var(--accent); }
+    .sidebar-nav { padding: 16px 12px; flex: 1; }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; cursor: pointer; color: var(--muted); font-weight: 600; font-size: 14px; transition: all .15s; border: none; background: none; width: 100%; text-align: left; }
+    .nav-item:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+    .nav-item.active { background: rgba(59,130,246,0.15); color: var(--accent); }
+    .nav-item .icon { font-size: 16px; width: 20px; text-align: center; }
+    .sidebar-footer { padding: 16px 20px; border-top: 1px solid var(--border); }
+    .user-chip { display: flex; align-items: center; gap: 10px; }
+    .avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), #8b5cf6); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; flex-shrink: 0; }
 
-    nav.topnav{display:flex;gap:12px;align-items:center}
-    nav.topnav a{color:var(--muted);text-decoration:none;padding:8px 12px;border-radius:10px;font-weight:600}
-    nav.topnav a.active{background:linear-gradient(90deg,rgba(0,102,255,0.08),rgba(255,0,51,0.06));color:var(--accent-solid)}
+    /* Topbar */
+    .topbar { display: flex; align-items: center; justify-content: space-between; padding: 16px 28px; border-bottom: 1px solid var(--border); background: var(--card); }
+    .topbar h1 { font-size: 20px; font-weight: 700; }
+    .topbar-actions { display: flex; gap: 10px; align-items: center; }
 
-    .user{display:flex;gap:10px;align-items:center}
-    .avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;background:linear-gradient(180deg,#0066ff,#ff0033)}
+    /* Buttons */
+    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-size: 14px; transition: all .15s; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: #2563eb; }
+    .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+    .btn-ghost:hover { color: var(--text); border-color: rgba(255,255,255,0.2); }
+    .btn-danger { background: rgba(239,68,68,0.15); color: var(--danger); border: 1px solid rgba(239,68,68,0.2); }
+    .btn-sm { padding: 6px 12px; font-size: 13px; }
 
-    /* Access nav */
-    .access-nav{position:fixed;top:calc(var(--nav-h) + 8px);left:50%;transform:translateX(-50%);z-index:950;
-      background:rgba(255,255,255,0.88);padding:6px;border-radius:999px;display:flex;gap:8px;align-items:center;box-shadow:0 6px 20px rgba(16,24,40,0.06);height:var(--access-h)}
-    .access-btn{border:0;background:transparent;padding:10px 16px;border-radius:999px;font-weight:700;color:var(--muted);cursor:pointer}
-    .access-btn.active{background:var(--accent);color:#fff;box-shadow:0 8px 24px rgba(0,102,255,0.12)}
+    /* Content */
+    .content { padding: 28px; flex: 1; }
+    .page { display: none; }
+    .page.active { display: block; }
 
-    /* Main */
-    main{padding-top:calc(var(--nav-h) + var(--access-h) + 36px);flex:1}
-    .container{max-width:1100px;margin:0 auto;padding:24px}
-
-    /* Hero & cards */
-    .hero{padding:36px;border-radius:16px;background:linear-gradient(180deg,rgba(255,255,255,0.6),rgba(255,255,255,0.45));box-shadow:var(--shadow);text-align:center}
-    .hero h1{font-size:32px;margin:6px 0}
-    .hero p{color:var(--muted);margin:0 0 14px}
-
+    /* Cards */
+    .card { background: var(--card); border: 1px solid var(--border); border-
     .grid{display:grid;gap:18px}
     .grid-3{grid-template-columns:repeat(3,1fr)}
     .grid-2{grid-template-columns:repeat(2,1fr)}
@@ -127,19 +127,17 @@
     <div class="user">
       <button id="openDeploy" class="btn primary" title="New deployment">New Deployment</button>
       <button id="toggleTheme" class="btn ghost" title="Toggle theme">THEME</button>
-      <div style="position:relative">
-        <div class="avatar" id="avatarBtn" title="Profile" style="cursor:pointer">DX</div>
-        <div id="profileDropdown" style="display:none;position:absolute;top:calc(100% + 10px);right:0;background:var(--card);border-radius:12px;box-shadow:0 10px 30px rgba(16,24,40,0.14);padding:16px;min-width:220px;z-index:2000;border:1px solid rgba(15,23,36,0.08)">
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-            <div class="avatar" style="width:42px;height:42px;font-size:16px" id="dropdownInitials">DX</div>
-            <div>
-              <div style="font-weight:700;font-size:14px" id="dropdownEmail">user@dexpress.app</div>
-              <div class="muted" style="font-size:12px">Logged in</div>
-            </div>
+      <div class="avatar" id="avatarBtn" title="Profile" style="cursor:pointer;position:relative">DX</div>
+      <div id="profileDropdown" style="display:none;position:absolute;top:calc(var(--nav-h) - 8px);right:18px;background:var(--card);border-radius:12px;box-shadow:0 10px 30px rgba(16,24,40,0.14);padding:16px;min-width:220px;z-index:2000;border:1px solid rgba(15,23,36,0.08)">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+          <div class="avatar" style="width:42px;height:42px;font-size:16px" id="dropdownInitials">DX</div>
+          <div>
+            <div style="font-weight:700;font-size:14px" id="dropdownEmail">user@dexpress.app</div>
+            <div class="muted" style="font-size:12px">Logged in</div>
           </div>
-          <hr style="border:none;border-top:1px solid rgba(15,23,36,0.06);margin:8px 0"/>
-          <button id="logoutBtn" class="btn ghost" style="width:100%;justify-content:center;color:#c22a2a;border-color:#fdecea">Logout</button>
         </div>
+        <hr style="border:none;border-top:1px solid rgba(15,23,36,0.06);margin:8px 0"/>
+        <button id="logoutBtn" class="btn ghost" style="width:100%;justify-content:center;color:#c22a2a;border-color:#fdecea">Logout</button>
       </div>
     </div>
   </header>
@@ -189,16 +187,8 @@
               <label class="muted">Project Name</label>
               <input id="inlineProjectName" type="text" placeholder="my-awesome-app" value="my-awesome-app"/>
 
-              <label class="muted" style="margin-top:8px">Repository URL <span class="muted" style="font-weight:400">(or upload files below)</span></label>
-              <input id="inlineRepo" type="url" placeholder="https://github.com/your/repo or any git URL" />
-              <div style="margin-top:10px;padding:10px 12px;border:1px dashed rgba(15,23,36,0.15);border-radius:8px;background:rgba(0,102,255,0.03)">
-                <div style="font-size:13px;color:var(--muted);margin-bottom:6px">Or upload project files</div>
-                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-                  <label for="inlineUpload" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;border:1px solid rgba(15,23,36,0.12);background:var(--card);cursor:pointer;font-size:13px;font-weight:600;color:var(--text)">📁 Choose Files</label>
-                  <input id="inlineUpload" type="file" multiple accept=".zip,.tar.gz,.js,.ts,.json,.html,.css,.py,.rb,.go" style="display:none"/>
-                  <span id="uploadLabel" style="font-size:13px;color:var(--muted)">No files chosen</span>
-                </div>
-              </div>
+              <label class="muted" style="margin-top:8px">Repository URL</label>
+              <input id="inlineRepo" type="url" placeholder="https://github.com/your/repo" />
 
               <div class="form-row" style="margin-top:8px">
                 <div class="col">
@@ -358,21 +348,32 @@
 <script>
 /* ---------- Utilities & state ---------- */
 
+const API = 'https://zignasa-three.vercel.app';
 const qs = s => document.querySelector(s);
 const qsa = s => Array.from(document.querySelectorAll(s));
 
 /* Projects / runs state persisted in localStorage */
 const STORAGE_KEY = 'dexpress_state_v1';
 let state = {
-  projects: [], // {id, name, repo, framework, region, domain, visitors, lastRun}
-  runs: [],     // {id, projectId, status, startedAt, finishedAt, buildTime, logs}
-  running: {}   // running deployment metadata by runId
+  projects: [],
+  runs: [],
+  running: {}
 };
-// load
 try {
   const raw = localStorage.getItem(STORAGE_KEY);
   if(raw) state = JSON.parse(raw);
 } catch(e){ console.warn('state load fail', e) }
+
+function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+    const [pRes, rRes] = await Promise.all([
+      fetch(API + '/api/projects'),
+      fetch(API + '/api/runs')
+    ]);
+    if(pRes.ok){ const d = await pRes.json(); if(d.projects?.length) state.projects = d.projects; }
+    if(rRes.ok){ const d = await rRes.json(); if(d.runs?.length) state.runs = d.runs; }
+    saveState(); refreshAll();
+  } catch(e){ console.warn('backend sync failed', e); }
+}
 
 function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
 
@@ -412,11 +413,11 @@ function goToSection(id){
 }
 
 /* theme toggle */
-const themeToggle = qs('#toggleTheme');
-themeToggle.addEventListener('click', ()=>{
-  document.documentElement.classList.toggle('theme-red');
-  const isRed = document.documentElement.classList.contains('theme-red');
-  themeToggle.textContent = isRed ? 'RED' : 'THEME';
+/* inline deploy button */
+qs('#inlineDeployBtn').addEventListener('click', async () => {
+  const payload = gatherInlineForm();
+  if(!payload) return;
+  await validateAndDeploy(payload);
 });
 
 /* open deploy modal from header and hero */
@@ -425,18 +426,16 @@ qs('#heroDeploy').addEventListener('click', openDeployModal);
 
 /* inline deploy button */
 qs('#inlineDeployBtn').addEventListener('click', () => {
+qs('#inlineSimulateFail').addEventListener('click', async ()=> {
   const payload = gatherInlineForm();
   if(!payload) return;
-  startDeployment(payload);
-});
-qs('#inlineCancelBtn').addEventListener('click', () => {
-  qs('#inlineProjectName').value = '';
+  payload.forceFail = true;
+  await validateAndDeploy(payload);
+});s('#inlineProjectName').value = '';
   qs('#inlineRepo').value = '';
   qs('#inlineFramework').value = 'Auto-detect';
   qs('#inlineEndpoint').value = '';
   qs('#inlineSendApi').checked = false;
-  const up = qs('#inlineUpload'); if(up) up.value = '';
-  const ul = qs('#uploadLabel'); if(ul) ul.textContent = 'No files chosen';
 });
 qs('#inlineSimulateFail').addEventListener('click', ()=> {
   const payload = gatherInlineForm();
@@ -561,33 +560,58 @@ function openDeployModal(){
       framework: qs('#mFramework').value,
       region: qs('#mRegion').value,
       sendApi: qs('#mSendApi').checked,
-      endpoint: qs('#mEndpoint').value.trim()
-    };
-    if(!payload.name){ alert('Project name is required'); return; }
-    closeModal();
-    startDeployment(payload);
-  });
-  // focus first input
-  setTimeout(()=>qs('#mProjectName')?.focus(), 120);
-}
-function closeModal(){ const root = qs('#modalRoot'); root.innerHTML=''; root.style.display='none'; }
-
 /* gather inline form */
 function gatherInlineForm(){
   const name = qs('#inlineProjectName').value.trim();
   if(!name){ alert('Please enter project name'); qs('#inlineProjectName').focus(); return null; }
-  const repo = qs('#inlineRepo').value.trim();
-  const uploadEl = qs('#inlineUpload');
-  const hasFiles = uploadEl && uploadEl.files && uploadEl.files.length > 0;
-  if(!repo && !hasFiles){
-    appendLog('[error] Deployment failed: Please provide a repository URL or upload project files');
-    setLiveStatus('failed');
-    return null;
-  }
   return {
     name,
-    repo,
-    uploadedFiles: hasFiles ? Array.from(uploadEl.files).map(f => f.name) : [],
+    repo: qs('#inlineRepo').value.trim(),
+    framework: qs('#inlineFramework').value,
+    region: qs('#inlineRegion').value,
+    sendApi: true,
+    endpoint: API + '/api/deploy'
+  };
+}unction gatherInlineForm(){
+  const name = qs('#inlineProjectName').value.trim();
+/* ---------- Repo validation + deploy ---------- */
+
+async function validateAndDeploy(payload) {
+  const repo = payload.repo;
+  if (repo) {
+    appendLog('Validating repository...');
+    setLiveStatus('validating');
+    try {
+      const res = await fetch(API + '/api/validate-repo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ repo })
+      });
+      const data = await res.json();
+      if (!data.valid) {
+        appendLog('[error] ' + (data.error || 'Invalid repository'));
+        setLiveStatus('failed');
+        alert('Repository validation failed: ' + (data.error || 'Invalid repository'));
+        return;
+      }
+      appendLog(`[ok] Repo validated: ${data.meta.fullName} (${data.meta.language || 'unknown'}, ⭐${data.meta.stars})`);
+      if (data.meta.language && (!payload.framework || payload.framework === 'Auto-detect')) {
+        payload.framework = data.meta.language;
+        appendLog(`[info] Auto-detected framework: ${payload.framework}`);
+      }
+    } catch(e) {
+      appendLog('[warn] Could not validate repo, proceeding anyway: ' + e.message);
+    }
+  } else {
+    appendLog('[warn] No repository URL provided — running simulation only');
+  }
+  startDeployment(payload);
+}
+
+/* ---------- Deployment simulation & API ---------- */nlineProjectName').focus(); return null; }
+  return {
+    name,
+    repo: qs('#inlineRepo').value.trim(),
     framework: qs('#inlineFramework').value,
     region: qs('#inlineRegion').value,
     sendApi: qs('#inlineSendApi').checked,
@@ -678,61 +702,31 @@ function startDeployment(payload){
         nextStep();
       } else {
         // finished local build; if sendApi is enabled, POST payload
-        // Always call real backend
-        const apiBase = 'https://zignasa-three.vercel.app';
-        appendLog('Sending deployment to backend...');
-        const uploadEl2 = qs('#inlineUpload');
-        const hasUpload = uploadEl2 && uploadEl2.files && uploadEl2.files.length > 0;
-        let fetchOpts;
-        if(hasUpload){
-          const fd = new FormData();
-          fd.append('name', project.name);
-          fd.append('repo', project.repo || '');
-          fd.append('framework', project.framework || '');
-          fd.append('region', project.region || '');
-          fd.append('projectFile', uploadEl2.files[0]);
-          appendLog(`Uploading file: ${uploadEl2.files[0].name} (${(uploadEl2.files[0].size/1024).toFixed(1)} KB)...`);
-          fetchOpts = { method:'POST', body: fd };
+        if(payload.sendApi && payload.endpoint){
+          appendLog(`Posting payload to ${payload.endpoint} ...`);
+          // try fetch
+          fetch(payload.endpoint, {
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({ project: project, runId })
+          }).then(async res => {
+            const text = await res.text().catch(()=>'<no-body>');
+            appendLog(`[api] HTTP ${res.status} ${res.statusText} — response: ${text.slice(0,500)}`);
+            if(res.ok){
+              finalizeRun('success', runId, Date.now()-startTs);
+            } else {
+              finalizeRun('failed', runId, Date.now()-startTs);
+            }
+          }).catch(err => {
+            appendLog('[api] Request failed: ' + err.message);
+            appendLog('[fallback] Continuing with local deploy simulation');
+            // fallback: finalize as success
+            finalizeRun('success', runId, Date.now()-startTs);
+          });
         } else {
-          fetchOpts = { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name: project.name, repo: project.repo, framework: project.framework, region: project.region }) };
+          // purely local simulation
+          finalizeRun('success', runId, Date.now()-startTs);
         }
-        fetch(apiBase + '/api/deploy', fetchOpts).then(async res => {
-          const data = await res.json().catch(()=>({}));
-          if(!res.ok){
-            appendLog('[error] ' + (data.error || 'Deploy API failed'));
-            finalizeRun('failed', runId, Date.now()-startTs);
-            return;
-          }
-          const backendRunId = data.runId;
-          appendLog(`[api] Queued — backend run ID: ${backendRunId}`);
-          // Poll backend for real-time status
-          let pollCount = 0;
-          const poll = setInterval(async () => {
-            pollCount++;
-            if(pollCount > 60){ clearInterval(poll); finalizeRun('failed', runId, Date.now()-startTs); return; }
-            try {
-              const r = await fetch(apiBase + '/api/runs/' + backendRunId);
-              const d = await r.json();
-              if(d.logs && d.logs.length){
-                const lastLog = d.logs[d.logs.length-1];
-                appendLog('[backend] ' + lastLog.message);
-              }
-              const pct = Math.min(95, pollCount * 8);
-              qs('#progressBar').style.width = pct + '%';
-              qs('#progressPct').textContent = pct + '%';
-              if(d.run && (d.run.status === 'success' || d.run.status === 'failed')){
-                clearInterval(poll);
-                qs('#progressBar').style.width = '100%';
-                qs('#progressPct').textContent = '100%';
-                appendLog(`[backend] Build ${d.run.status} — time: ${d.run.build_time || '—'}`);
-                finalizeRun(d.run.status, runId, Date.now()-startTs);
-              }
-            } catch(e){ appendLog('[poll error] ' + e.message); }
-          }, 1500);
-        }).catch(err => {
-          appendLog('[error] Could not reach backend: ' + err.message);
-          finalizeRun('failed', runId, Date.now()-startTs);
-        });
       }
     }, stepDelay);
   }
@@ -784,7 +778,10 @@ function finalizeRun(status, runId, msTaken=0){
 /* live UI helpers */
 function setLiveStatus(t){
   qs('#liveStatus').textContent = t;
-  if(t === 'success') qs('#liveStatus').style.color = 'green';
+      if(act==='visit'){ 
+        const proj = state.projects.find(p=>p.id===id);
+        if(proj) window.open(proj.repo || ('https://' + proj.domain), '_blank');
+      }
   else if(t === 'failed') qs('#liveStatus').style.color = 'red';
   else qs('#liveStatus').style.color = 'inherit';
 }
@@ -794,9 +791,9 @@ function appendLog(text){
   if(el.textContent === 'No logs yet.') el.textContent = '';
   el.textContent += `[${ts}] ${text}\n`;
   el.scrollTop = el.scrollHeight;
-}
-
-/* cancel all running (cleanup) */
+  const succRuns = state.runs.filter(r=>r.status==='success');
+  const times = succRuns.slice(0,20).map(r=>parseBuildTime(r.build_time||r.buildTime)).filter(Boolean);
+  qs('#statAvg').textContent = times.length ? Math.round(times.reduce((a,b)=>a+b,0)/times.length) + 's' : '—';
 window.addEventListener('beforeunload', ()=>{ Object.keys(state.running).forEach(k=>state.running[k].cancel=true); });
 
 /* ---------- UI refresh based on state ---------- */
@@ -813,28 +810,32 @@ function refreshAll(){
   const activeList = qs('#activeList'); activeList.innerHTML = '';
   state.projects.slice(0,10).forEach(p=>{
     const el = document.createElement('div'); el.className='card'; el.style.marginBottom='8px';
-    el.innerHTML = `<div style="display:flex;gap:12px;align-items:center">
-      <div style="font-weight:800">${escapeHtml(p.name)}</div>
-      <div class="muted">${escapeHtml(p.domain)}</div>
-      <div style="margin-left:auto;display:flex;gap:8px">
-        <button class="btn ghost" data-act="visit" data-id="${p.id}">Visit</button>
-        <button class="btn primary" data-act="redeploy" data-id="${p.id}">Redeploy</button>
-      </div>
-    </div>
-    <div class="muted" style="margin-top:8px">Framework: ${escapeHtml(p.framework)} • Region: ${escapeHtml(p.region || 'auto')}</div>`;
-    activeList.appendChild(el);
-  });
   // attach actions
   qsa('#activeList [data-act]').forEach(btn=>{
     btn.addEventListener('click',(e)=>{
-      const id = btn.dataset.id;
+      const pid = btn.dataset.id;
       const act = btn.dataset.act;
-      if(act==='visit'){ alert('Open site: ' + (state.projects.find(p=>p.id===id)?.domain || '—')) }
+      if(act==='visit'){
+        const proj = state.projects.find(p=>p.id==pid||p.id===pid);
+        if(proj) window.open('https://' + proj.domain, '_blank');
+      }
       if(act==='redeploy'){
-        const proj = state.projects.find(p=>p.id===id);
-        if(proj) startDeployment({ name: proj.name, repo: proj.repo, framework: proj.framework, region: proj.region });
+        const proj = state.projects.find(p=>p.id==pid||p.id===pid);
+        if(proj) startDeployment({ name: proj.name, repo: proj.repo, framework: proj.framework, region: proj.region, sendApi: true, endpoint: API + '/api/deploy' });
       }
     });
+  });attach actions
+  state.runs.slice(0,30).forEach(r=>{
+    const p = state.projects.find(pp=>pp.id==r.project_id||pp.id===r.projectId) || {name:'—', domain:'—', framework:'—'};
+    const buildTime = r.build_time || r.buildTime || '—';
+    const row = document.createElement('tr');
+    row.innerHTML = `<td><strong>${escapeHtml(p.name)}</strong><div class="muted">${escapeHtml(p.domain||'')}</div></td>
+      <td>${r.status === 'success' ? `<span class="status success">success</span>` : r.status === 'running' ? `<span class="status">running</span>` : `<span class="status failed">${escapeHtml(r.status)}</span>`}</td>
+      <td>${escapeHtml(p.framework || '—')}</td>
+      <td>${r.finished_at||r.finishedAt ? new Date(r.finished_at||r.finishedAt).toLocaleString() : (r.started_at||r.startedAt?new Date(r.started_at||r.startedAt).toLocaleString():'—')}</td>
+      <td>${escapeHtml(buildTime)}</td>
+      <td>${p.visitors ?? '-'}</td>`;
+    tbody.appendChild(row);
   });
 
   // results table (recent runs)
@@ -876,11 +877,47 @@ function parseBuildTimeToSecs(str){
 
 /* ---------- Modal: React demo (on-demand) ---------- */
 
-async function openReactDemo(){
-  // show a small modal that loads React + runs a tiny app
-  const root = qs('#reactDemoRoot');
-  root.style.display = 'block';
-  root.innerHTML = `
+/* ---------- Profile dropdown ---------- */
+const avatarBtn = qs('#avatarBtn');
+const profileDropdown = qs('#profileDropdown');
+
+try {
+  const u = JSON.parse(localStorage.getItem('dexpress_user') || '{}');
+  if(u.email){
+    qs('#dropdownEmail').textContent = u.email;
+    const displayName = u.name || u.email.split('@')[0];
+    const initials = displayName.slice(0,2).toUpperCase();
+    qs('#dropdownInitials').textContent = initials;
+    avatarBtn.textContent = initials;
+    // show name in header
+    const nameEl = document.createElement('span');
+    nameEl.textContent = displayName;
+    nameEl.style.cssText = 'font-size:13px;font-weight:600;color:var(--muted);margin-right:4px';
+    avatarBtn.parentElement.insertBefore(nameEl, avatarBtn);
+    // add name row to dropdown
+    const nameRow = document.createElement('div');
+    nameRow.style.cssText = 'font-size:12px;color:var(--muted);margin-top:2px';
+    nameRow.textContent = displayName;
+    qs('#dropdownEmail').after(nameRow);
+  }
+} catch(e){}
+
+avatarBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  profileDropdown.style.display = profileDropdown.style.display === 'none' ? 'block' : 'none';
+});
+
+document.addEventListener('click', () => {
+  profileDropdown.style.display = 'none';
+});
+
+qs('#logoutBtn').addEventListener('click', () => {
+  localStorage.removeItem('dexpress_user');
+  window.location.href = 'log.html';
+});
+
+/* ---------- init ---------- */
+refreshAll();TML = `
     <div class="modal-backdrop" role="dialog" aria-modal="true">
       <div class="modal" id="reactModal" style="max-width:820px">
         <div style="display:flex;align-items:center;gap:12px">
@@ -924,58 +961,18 @@ async function openReactDemo(){
     );
   }
   const mount = document.getElementById('reactMount');
-  ReactDOM.createRoot(mount).render(e(Demo));
-}
+/* ---------- init ---------- */
+refreshAll();
+syncFromBackend();
 
-/* helper to dynamically load script */
-function loadScript(src){
-  return new Promise((resolve, reject) => {
-    const s = document.createElement('script');
-    s.src = src; s.onload = resolve; s.onerror = reject;
+// load some demo entries if empty
+if(state.projects.length === 0 && state.runs.length === 0){
     document.head.appendChild(s);
   });
 }
 
 /* ---------- small helpers ---------- */
 function escapeHTML(s){ return s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
-
-
-/* ---------- Profile dropdown ---------- */
-const avatarBtn = qs('#avatarBtn');
-const profileDropdown = qs('#profileDropdown');
-
-try {
-  const u = JSON.parse(localStorage.getItem('dexpress_user') || '{}');
-  if(u.email){
-    qs('#dropdownEmail').textContent = u.email;
-    const initials = u.email.slice(0,2).toUpperCase();
-    qs('#dropdownInitials').textContent = initials;
-    avatarBtn.textContent = initials;
-  }
-} catch(e){}
-
-avatarBtn.addEventListener('click', (e) => {
-  e.stopPropagation();
-  profileDropdown.style.display = profileDropdown.style.display === 'none' ? 'block' : 'none';
-});
-
-document.addEventListener('click', () => {
-  profileDropdown.style.display = 'none';
-});
-
-qs('#logoutBtn').addEventListener('click', () => {
-  localStorage.removeItem('dexpress_user');
-  window.location.href = 'log.html';
-});
-
-
-/* ---------- Upload file wiring ---------- */
-const inlineUpload = qs('#inlineUpload');
-const uploadLabel = qs('#uploadLabel');
-inlineUpload.addEventListener('change', () => {
-  const files = Array.from(inlineUpload.files);
-  uploadLabel.textContent = files.length ? files.map(f => f.name).join(', ') : 'No files chosen';
-});
 
 /* ---------- init ---------- */
 

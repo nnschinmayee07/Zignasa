@@ -3,164 +3,213 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Intro Video — DeXpress</title>
-
+  <title>DeXpress — Deploy Your Code in One Click</title>
   <style>
-    /* --- layout --- */
-    :root{
-      --bg: #000;
+    :root {
+      --bg: #05080f;
+      --card: rgba(255,255,255,0.04);
       --accent: #0066ff;
-      --muted: rgba(255,255,255,0.6);
+      --accent2: #ff0033;
+      --text: #f0f4ff;
+      --muted: rgba(240,244,255,0.55);
+      --border: rgba(255,255,255,0.08);
     }
-    html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial; background:var(--bg); color:#fff; -webkit-font-smoothing:antialiased}
-    .center{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--text);font-family:Inter,system-ui,'Segoe UI',Roboto,Arial;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 
-    /* video fills viewport */
-    video {
-      position: absolute;
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      top:0;left:0;
-      opacity:1;
-      transition: opacity 420ms ease;
+    /* NAV */
+    nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:64px;background:rgba(5,8,15,0.8);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+    .nav-brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;letter-spacing:-0.5px}
+    .nav-brand span{background:linear-gradient(90deg,#0066ff,#ff0033);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .nav-logo{width:36px;height:36px;border-radius:8px;object-fit:cover}
+    .nav-links{display:flex;gap:8px;align-items:center}
+    .nav-link{color:var(--muted);text-decoration:none;padding:8px 14px;border-radius:8px;font-size:14px;font-weight:500;transition:color .2s}
+    .nav-link:hover{color:var(--text)}
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:10px;border:none;cursor:pointer;font-weight:700;font-size:14px;transition:transform .2s,box-shadow .2s;text-decoration:none}
+    .btn:hover{transform:translateY(-2px)}
+    .btn-primary{background:linear-gradient(135deg,#0066ff,#0044cc);color:#fff;box-shadow:0 8px 24px rgba(0,102,255,0.3)}
+    .btn-ghost{background:transparent;color:var(--text);border:1px solid var(--border)}
+    .btn-ghost:hover{border-color:rgba(255,255,255,0.2)}
+    .btn-large{padding:14px 28px;font-size:16px;border-radius:12px}
+
+    /* HERO */
+    .hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:100px 24px 60px;position:relative;overflow:hidden}
+    .hero-glow{position:absolute;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(0,102,255,0.15) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-60%);pointer-events:none}
+    .hero-glow2{position:absolute;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(255,0,51,0.08) 0%,transparent 70%);top:60%;left:60%;pointer-events:none}
+    .badge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:999px;border:1px solid rgba(0,102,255,0.3);background:rgba(0,102,255,0.08);font-size:13px;color:#60a5fa;margin-bottom:24px;font-weight:600}
+    .hero h1{font-size:clamp(36px,6vw,72px);font-weight:900;line-height:1.1;letter-spacing:-2px;margin-bottom:20px}
+    .hero h1 span{background:linear-gradient(90deg,#0066ff,#ff0033);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .hero p{font-size:clamp(16px,2vw,20px);color:var(--muted);max-width:560px;line-height:1.6;margin-bottom:36px}
+    .hero-btns{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-bottom:60px}
+    .hero-note{font-size:13px;color:var(--muted)}
+
+    /* VIDEO PREVIEW */
+    .video-wrap{position:relative;width:100%;max-width:800px;margin:0 auto;border-radius:16px;overflow:hidden;border:1px solid var(--border);box-shadow:0 40px 80px rgba(0,0,0,0.6)}
+    .video-wrap video{width:100%;display:block}
+    .video-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 60%,rgba(5,8,15,0.9));pointer-events:none}
+
+    /* HOW IT WORKS */
+    .section{padding:80px 24px;max-width:1100px;margin:0 auto}
+    .section-label{font-size:13px;font-weight:700;color:#60a5fa;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px}
+    .section h2{font-size:clamp(28px,4vw,44px);font-weight:800;letter-spacing:-1px;margin-bottom:16px}
+    .section p.sub{color:var(--muted);font-size:16px;max-width:500px;line-height:1.6;margin-bottom:48px}
+
+    .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px}
+    .step{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px;position:relative;overflow:hidden;transition:border-color .2s}
+    .step:hover{border-color:rgba(0,102,255,0.3)}
+    .step-num{font-size:48px;font-weight:900;color:rgba(0,102,255,0.12);position:absolute;top:12px;right:16px;line-height:1}
+    .step-icon{font-size:28px;margin-bottom:14px}
+    .step h3{font-size:17px;font-weight:700;margin-bottom:8px}
+    .step p{font-size:14px;color:var(--muted);line-height:1.6}
+
+    /* FEATURES */
+    .features{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+    .feature{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px;transition:border-color .2s,transform .2s}
+    .feature:hover{border-color:rgba(0,102,255,0.25);transform:translateY(-3px)}
+    .feature-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:14px}
+    .feature h3{font-size:16px;font-weight:700;margin-bottom:6px}
+    .feature p{font-size:14px;color:var(--muted);line-height:1.6}
+
+    /* CTA BANNER */
+    .cta-banner{background:linear-gradient(135deg,rgba(0,102,255,0.15),rgba(255,0,51,0.08));border:1px solid rgba(0,102,255,0.2);border-radius:20px;padding:60px 40px;text-align:center;margin:0 24px 80px}
+    .cta-banner h2{font-size:clamp(24px,4vw,40px);font-weight:800;margin-bottom:12px;letter-spacing:-1px}
+    .cta-banner p{color:var(--muted);font-size:16px;margin-bottom:28px}
+
+    /* FOOTER */
+    footer{border-top:1px solid var(--border);padding:32px 24px;text-align:center;color:var(--muted);font-size:14px}
+
+    @media(max-width:600px){
+      nav{padding:0 16px}
+      .nav-links .nav-link{display:none}
+      .hero-btns{flex-direction:column;align-items:center}
+      .cta-banner{padding:40px 20px;margin:0 12px 60px}
     }
-
-    /* overlay content (logo/title/skip) */
-    .overlay {
-      position:relative;
-      z-index: 10;
-      display:flex;
-      flex-direction:column;
-      gap:12px;
-      align-items:center;
-      pointer-events:none;
-    }
-    .brand {
-      pointer-events:auto;
-      background: rgba(0,0,0,0.35);
-      padding:10px 14px;
-      border-radius:12px;
-      backdrop-filter: blur(6px);
-      display:flex;
-      gap:10px;
-      align-items:center;
-    }
-    .brand img{width:48px;height:48px;border-radius:8px;object-fit:cover}
-    .brand .title{font-weight:700;letter-spacing:1px}
-
-    /* skip button */
-    .controls {
-      margin-top:18px;
-      pointer-events:auto;
-      display:flex;
-      gap:10px;
-    }
-    .btn {
-      border:0; padding:10px 14px; border-radius:10px; font-weight:700;
-      cursor:pointer; background:linear-gradient(90deg,var(--accent),#ff0033); color:#fff;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.45);
-      transition: transform .22s ease, box-shadow .22s ease, opacity .22s ease;
-      transform-origin:center;
-      user-select:none;
-    }
-    .btn.ghost { background: rgba(255,255,255,0.06); color: #fff; border: 1px solid rgba(255,255,255,0.06) }
-
-    .btn:hover{ transform: translateY(-4px) scale(1.02) }
-    .btn:active{ transform: scale(.96) }
-
-    /* fade-out for navigation */
-    .fade-out { opacity: 0 !important; transition: opacity 360ms ease-in; }
-
-    /* mobile tweaks */
-    @media (max-width:700px){
-      .brand .title { font-size:16px }
-      .brand img{width:40px;height:40px}
-      .btn{padding:10px 12px}
-    }
-
-    /* ripple helper styles (invisible) */
-    .ripple { position: absolute; border-radius: 50%; transform: scale(0); pointer-events: none; opacity: .9; }
   </style>
 </head>
 <body>
-  <div class="center">
-    <!-- video element: use relative path for portability -->
-    <video id="introVideo" autoplay muted playsinline>
-      <source src="./logo.mp4" type="video/mp4">
-      <!-- fallback text -->
-    </video>
 
-    <div class="overlay" aria-hidden="false">
-      <div class="brand" role="img" aria-label="DeXpress">
-        <img src="https://drive.google.com/thumbnail?id=1OFonl14VlrMn_Y4Ql2T0Dc-aJFS-kXUj" alt="logo">
-        <div>
-          <div class="title">DeXpress</div>
-          <div style="font-size:13px;color:var(--muted)">Deploy in one click</div>
-        </div>
-      </div>
+<!-- NAV -->
+<nav>
+  <div class="nav-brand">
+    <img class="nav-logo" src="https://drive.google.com/thumbnail?id=1OFonl14VlrMn_Y4Ql2T0Dc-aJFS-kXUj" alt="DeXpress logo">
+    <span>DeXpress</span>
+  </div>
+  <div class="nav-links">
+    <a href="#how" class="nav-link">How it works</a>
+    <a href="#features" class="nav-link">Features</a>
+    <a href="log.html" class="btn btn-ghost" style="padding:8px 16px;font-size:14px">Log in</a>
+    <a href="log.html" class="btn btn-primary" style="padding:8px 16px;font-size:14px">Get Started Free</a>
+  </div>
+</nav>
 
-      <div class="controls">
-        <button id="skipBtn" class="btn ghost" title="Skip intro">Skip</button>
-        <a id="enterBtn" class="btn" href="log.html" title="Enter DeXpress">Enter</a>
-      </div>
-    </div>
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-glow2"></div>
+
+  <div class="badge">⚡ The simplest way to deploy your code</div>
+
+  <h1>Push your code.<br><span>Go live in seconds.</span></h1>
+
+  <p>DeXpress takes your project — from GitHub or your device — and deploys it to the cloud instantly. No servers to manage. No config files. Just your code, live.</p>
+
+  <div class="hero-btns">
+    <a href="log.html" class="btn btn-primary btn-large">Start Deploying Free →</a>
+    <a href="#how" class="btn btn-ghost btn-large">See how it works</a>
   </div>
 
-  <script>
-    /* --- small utilities --- */
-    const video = document.getElementById('introVideo');
-    const skipBtn = document.getElementById('skipBtn');
-    const enterBtn = document.getElementById('enterBtn');
+  <p class="hero-note">No credit card required &nbsp;·&nbsp; Works with any framework &nbsp;·&nbsp; Deploy in under 60 seconds</p>
 
-    // When video ends -> navigate to login
-    video.addEventListener('ended', () => goTo('log.html'));
+  <div class="video-wrap" style="margin-top:48px">
+    <video autoplay muted loop playsinline>
+      <source src="./logo.mp4" type="video/mp4">
+    </video>
+    <div class="video-overlay"></div>
+  </div>
+</section>
 
-    // Fallback: if the file fails, show Enter quickly
-    video.addEventListener('error', () => {
-      // bring enter button into focus
-      enterBtn.style.opacity = '1';
-    });
+<!-- HOW IT WORKS -->
+<section class="section" id="how">
+  <div class="section-label">How it works</div>
+  <h2>Deploy in 3 simple steps</h2>
+  <p class="sub">You don't need to be a DevOps expert. If you can write code, you can deploy with DeXpress.</p>
 
-    // Skip button
-    skipBtn.addEventListener('click', () => goTo('log.html'));
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-icon">📁</div>
+      <h3>Upload or connect your project</h3>
+      <p>Paste a GitHub/GitLab URL or upload your project files directly from your device. Any framework works.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-icon">⚙️</div>
+      <h3>We build it for you</h3>
+      <p>DeXpress automatically installs dependencies, builds your app, runs tests, and packages everything — you just watch the live logs.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-icon">🚀</div>
+      <h3>Your app is live</h3>
+      <p>Get a live URL instantly. Share it with anyone. Redeploy anytime with one click from your dashboard.</p>
+    </div>
+  </div>
+</section>
 
-    // Improved navigation: fade out before redirect for internal links only
-    function goTo(href){
-      // if href seems external, do direct navigation
-      if(/^https?:\\/\\//i.test(href) && !href.startsWith(location.origin)) {
-        location.href = href;
-        return;
-      }
-      document.body.classList.add('fade-out');
-      setTimeout(()=> location.href = href, 360);
-    }
+<!-- FEATURES -->
+<section class="section" id="features" style="padding-top:0">
+  <div class="section-label">Features</div>
+  <h2>Everything you need to ship</h2>
+  <p class="sub">Built for developers who want to focus on code, not infrastructure.</p>
 
-    // attach enter button click so fade-out is used
-    enterBtn.addEventListener('click', function(e){ e.preventDefault(); goTo(this.getAttribute('href')); });
+  <div class="features">
+    <div class="feature">
+      <div class="feature-icon" style="background:rgba(0,102,255,0.12)">📡</div>
+      <h3>Live deployment logs</h3>
+      <p>Watch your build happen in real time — every step from cloning to going live, streamed to your screen.</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon" style="background:rgba(16,185,129,0.12)">🔗</div>
+      <h3>Any repo URL</h3>
+      <p>GitHub, GitLab, Bitbucket — paste any public repo URL and we'll validate and deploy it automatically.</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon" style="background:rgba(245,158,11,0.12)">📦</div>
+      <h3>Upload from device</h3>
+      <p>No repo? No problem. Upload your project files directly from your computer and deploy instantly.</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon" style="background:rgba(139,92,246,0.12)">📊</div>
+      <h3>Project dashboard</h3>
+      <p>Track all your deployments, build times, visitor counts, and project history in one clean dashboard.</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon" style="background:rgba(255,0,51,0.1)">🔁</div>
+      <h3>One-click redeploy</h3>
+      <p>Updated your code? Hit Redeploy and we'll rebuild and push the latest version live in seconds.</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon" style="background:rgba(0,102,255,0.12)">🌍</div>
+      <h3>Multi-region support</h3>
+      <p>Deploy to US, Europe, or Asia-Pacific. Pick the region closest to your users for the fastest load times.</p>
+    </div>
+  </div>
+</section>
 
-    /* --- ripple effect for .btn elements --- */
-    (function attachRipple(){
-      document.querySelectorAll('.btn, a.btn').forEach(el=>{
-        el.style.position = 'relative';
-        el.style.overflow = 'hidden';
-        el.addEventListener('click', function(e){
-          const rect = this.getBoundingClientRect();
-          const size = Math.max(rect.width, rect.height) * 1.6;
-          const ripple = document.createElement('span');
-          ripple.className = 'ripple';
-          ripple.style.width = ripple.style.height = size + 'px';
-          ripple.style.left = (e.clientX - rect.left - size/2) + 'px';
-          ripple.style.top = (e.clientY - rect.top - size/2) + 'px';
-          ripple.style.background = 'rgba(255,255,255,0.18)';
-          ripple.style.transition = 'transform .55s cubic-bezier(.2,.9,.3,1), opacity .55s';
-          this.appendChild(ripple);
-          requestAnimationFrame(()=> ripple.style.transform = 'scale(1)');
-          setTimeout(()=>{ ripple.style.opacity = '0'; }, 350);
-          setTimeout(()=> ripple.remove(), 700);
-        });
-      });
-    })();
-  </script>
+<!-- CTA -->
+<div style="max-width:1100px;margin:0 auto">
+  <div class="cta-banner">
+    <h2>Ready to deploy your first project?</h2>
+    <p>It takes less than a minute. No setup, no config, no headaches.</p>
+    <a href="log.html" class="btn btn-primary btn-large">Get Started — It's Free →</a>
+  </div>
+</div>
+
+<footer>
+  <div style="margin-bottom:8px;font-weight:700;font-size:16px;color:var(--text)">DeXpress</div>
+  <div>The simplest deployment platform for developers &nbsp;·&nbsp; <a href="log.html" style="color:#60a5fa;text-decoration:none">Log in</a></div>
+</footer>
+
 </body>
 </html>
