@@ -500,6 +500,10 @@ async function startDeployment(payload){
           run.status=d.run.status; run.finishedAt=nowISO(); run.buildTime=d.run.build_time||'—';
           delete state.running[runId];
           saveState(); refreshAll();
+          if(d.run.status==='success'){
+            showToast('🎉 Deployed successfully!');
+            setTimeout(()=> showPage('feedback'), 1800);
+          }
         }
       } catch(e){ appendLog('[poll error] '+e.message); }
     }, 1500);
@@ -514,6 +518,13 @@ async function startDeployment(payload){
 qs('#cancelDeploy').addEventListener('click', ()=>{ Object.keys(state.running).forEach(k=>state.running[k].cancel=true); });
 
 /* ── Live UI helpers ── */
+function showToast(msg){
+  const t = document.createElement('div');
+  t.textContent = msg;
+  t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#10b981;color:#fff;padding:12px 24px;border-radius:10px;font-weight:700;font-size:15px;z-index:9999;box-shadow:0 8px 24px rgba(16,185,129,0.4);transition:opacity .4s';
+  document.body.appendChild(t);
+  setTimeout(()=>{ t.style.opacity='0'; setTimeout(()=>t.remove(), 400); }, 2200);
+}
 function setLiveStatus(t){
   const el = qs('#liveStatus');
   el.textContent = t;
