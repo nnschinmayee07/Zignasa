@@ -611,7 +611,8 @@ qs('#sendFeedback').addEventListener('click', ()=>{
   let arr=[]; try{ arr=JSON.parse(localStorage.getItem('dexpress_feedback')||'[]'); }catch{}
   arr.unshift(fb); localStorage.setItem('dexpress_feedback',JSON.stringify(arr));
   qs('#feedbackText').value='';
-  alert('Thanks for the feedback!');
+  showToast('Thanks for the feedback! 💙');
+  setTimeout(()=> showPage('home'), 1800);
 });
 
 /* ── Help button ── */
